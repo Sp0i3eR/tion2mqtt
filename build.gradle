@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'java-library-distribution'
+    id 'io.franzbecker.gradle-lombok' version "3.3.0"
+}
+
+group 'expert.serebro'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+ext {
+    libraries = [
+            lombok : '1.18.12',
+            slf4j  : '1.7.30',
+            jackson: '2.10.3',
+            testng : '6.8.21',
+            paho   : '1.2.4',
+    ]
+
+}
+lombok {
+    version = "${libraries.lombok}"
+}
+dependencies {
+    compile files('/usr/lib/lib/java/tinyb.jar')
+
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: "${libraries.jackson}"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "${libraries.jackson}"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "${libraries.jackson}"
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: "${libraries.slf4j}"
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version: "${libraries.slf4j}"
+    compile group: 'org.slf4j', name: 'log4j-over-slf4j', version: "${libraries.slf4j}"
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: "${libraries.slf4j}"
+
+    compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: "${libraries.paho}"
+    testCompile group: 'org.testng', name: 'testng', version: "${libraries.testng}"
+
+}
+
+distZip.shouldRunAfter(build)
+
+jar {
+
+    manifest {
+        attributes 'Main-Class': 'expert.serebro.tion.Runner',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+    }
+}
