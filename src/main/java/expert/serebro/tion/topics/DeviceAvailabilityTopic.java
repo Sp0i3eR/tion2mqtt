@@ -55,7 +55,7 @@ public class DeviceAvailabilityTopic implements Runnable {
         if (client.isConnected()) {
             MqttMessage msg = new MqttMessage((breezerDevice.isAvailable() ? TopicUtils.AVAILABILITY_ONLINE: TopicUtils.AVAILABILITY_OFFLINE).getBytes());
             msg.setQos(0);
-            msg.setRetained(true);
+            msg.setRetained(false);
             log.info(String.format("Device %s became %s", breezerDevice.getAddress(), msg));
             client.publish(TopicUtils.formatTopic(breezerDevice, TopicUtils.AVAILABILITY_TOPIC), msg);
         }

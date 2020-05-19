@@ -27,4 +27,21 @@ public class BreezerSettings implements Serializable {
     private byte thirdFanPreset;
     private String versionOfFirmwareHex;
 
+    public String getSpeedText() {
+        if (!enabled) {
+            return "OFF";
+        } else {
+            if (fanSpeed <= firstFanPreset) {
+                return "LOW";
+            } else if (fanSpeed <= secondFanPreset) {
+                return "MEDIUM";
+            } else {
+                return "HIGH";
+            }
+        }
+    }
+
+    public String getStateText() {
+        return enabled ? "ON" : "OFF";
+    }
 }

@@ -27,13 +27,13 @@ public class DeviceSpeedListener implements IMqttMessageListener {
         if (device.isAvailable()) {
             log.debug(String.format("Device %s is available, creating bluetooth session", device.getAddress()));
             new BluetoothSession(device,
-                    createSpeedCommandChain(device, client, Integer.parseInt(new String(message.getPayload())))
+                    createSpeedCommandChain(device, client, new String(message.getPayload()))
             ).run();
         }
     }
 
-    private static Collection<Command> createSpeedCommandChain(BreezerDevice device, IMqttClient client, Integer speed) {
-        var querySettingsCommand = new QuerySettingsCommand(speed);
+    private static Collection<Command> createSpeedCommandChain(BreezerDevice device, IMqttClient client, String payload) {
+        var querySettingsCommand = new QuerySettingsCommand(payload);
         var updateSettingsCommand = new UpdateSettingsCommand(querySettingsCommand::getResponse);
         var sendStateToTopicCommand = new SendStateToTopicCommand(updateSettingsCommand::getResponse, client, TopicUtils.formatTopic(device, TopicUtils.STATE_TOPIC));
         return List.of(querySettingsCommand, updateSettingsCommand, sendStateToTopicCommand);

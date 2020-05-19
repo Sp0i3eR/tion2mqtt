@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class QuerySettingsCommand extends AbstractChainedResponseBluetoothCommand<Integer, BreezerSettings> {
-    private final Integer newSpeed;
+public class QuerySettingsCommand extends AbstractChainedResponseBluetoothCommand<String, BreezerSettings> {
+    private final String payload;
 
     @Override
     public Stream<byte[]> stream() {
@@ -20,17 +20,50 @@ public class QuerySettingsCommand extends AbstractChainedResponseBluetoothComman
 
     private BreezerSettings resetSpeedIfApplicable(BreezerSettings settings) {
         if (getDataSupplier() != null) {
-            var speed = getDataSupplier().get();
-            if (speed != null && speed >= 0 && speed <= 6) {
-                if (speed == 0) {
+            var str = getDataSupplier().get();
+            if (!tryParseAndSetSpeed(payload, settings)) {
+                if ("false".equalsIgnoreCase(str) || "off".equalsIgnoreCase(str)) {
                     settings.setEnabled(false);
-                } else {
+                } else if ("true".equalsIgnoreCase(str) || "on".equalsIgnoreCase(str)) {
                     settings.setEnabled(true);
-                    settings.setFanSpeed(speed.byteValue());
                 }
             }
         }
         return settings;
+    }
+
+    public boolean tryParseAndSetSpeed(String payload, BreezerSettings settings) {
+        Integer speed = null;
+        try {
+            speed = Integer.parseInt(payload);
+        } catch (NumberFormatException e) {
+            // Not int
+        }
+        if (speed == null) {
+            if ("low".equalsIgnoreCase(payload)) {
+                settings.setEnabled(true);
+                settings.setFanSpeed(settings.getFirstFanPreset());
+                return true;
+            } else if ("medium".equalsIgnoreCase(payload)) {
+                settings.setEnabled(true);
+                settings.setFanSpeed(settings.getSecondFanPreset());
+                return true;
+            } else if ("high".equalsIgnoreCase(payload)) {
+                settings.setEnabled(true);
+                settings.setFanSpeed(settings.getThirdFanPreset());
+                return true;
+            }
+            return false;
+        } else if (speed >= 0 && speed <= 6) {
+            if (speed == 0) {
+                settings.setEnabled(false);
+            } else {
+                settings.setEnabled(true);
+                settings.setFanSpeed(speed.byteValue());
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -54,10 +87,10 @@ public class QuerySettingsCommand extends AbstractChainedResponseBluetoothComman
     }
 
     @Override
-    public Supplier<Integer> getDataSupplier() {
-        if (getNewSpeed() == null) {
+    public Supplier<String> getDataSupplier() {
+        if (getPayload() == null) {
             return null;
         }
-        return this::getNewSpeed;
+        return this::getPayload;
     }
 }

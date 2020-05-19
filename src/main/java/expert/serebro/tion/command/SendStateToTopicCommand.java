@@ -30,7 +30,7 @@ public class SendStateToTopicCommand implements ProcessingCommand<BreezerSetting
             try {
                 MqttMessage msg = new MqttMessage(OBJECT_MAPPER.writeValueAsBytes(getDataSupplier().get()));
                 msg.setQos(0);
-                msg.setRetained(true);
+                msg.setRetained(false);
                 client.publish(topic, msg);
             } catch (JsonProcessingException | MqttException e) {
                 log.error(String.format("Error sending message to topic %s", topic), e);
